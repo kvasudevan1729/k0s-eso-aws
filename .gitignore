@@ -1,0 +1,17 @@
+# terraform
+*.tfstate
+*.tfstate.backup
+*.tfstate.*.backup
+.terraform.lock.hcl
+*terraform.tfvars
+.terraform/
+.terraform_plugin_cache/
+terraform.iml
+saved-plan
+terraform.d/
+
+# idea
+.idea/
+
+# others
+.envrc
