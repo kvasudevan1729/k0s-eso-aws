@@ -7,8 +7,9 @@ This is beneficial for many reasons:
 - We remove any intermediate resource (person/system) to store/populate secrets,
   thus minimising secret leaks.
 - Secret value changes are propagated automatically.
-- By using a secret backend in cloud, one avoids running a local vault
-  backend (which we know is not trivial).
+- By using a secret backend in cloud, one avoids running a vault service in
+  your environment (a vault service will need to be redundant, possibly backed
+  by HSM and so on, so not trivial).
 - ESO supports a number of backends (AWS, GCP, Vault etc.) for use in different
   types of scenarios.
 
@@ -43,7 +44,7 @@ encryption/decryption.
 
 ```
 echo -n '<access key>' > ./access-key
-# write '<secret key>' to ./secret-key, ensure there are no newline characters.
+# write '<secret key>' to ./secret-key, ensure there are *NO* newline characters.
 kubectl create secret generic awssm-secret \
   --from-file=./access-key --from-file=./secret-key
 rm -f ./access-key ./secret-key
@@ -64,7 +65,9 @@ kubectl get clustersecretstores
 
 ## Create AWS secret
 
-Create AWS secret in key-value format. For e.g.: 
+To prove that external secrets work, we are first going to create a secret
+in AWS secret manager (key-value format) and then sync that secret into
+our kubernetes environment. 
 
 ```
 aws secretsmanager create-secret --name redis-creds \
@@ -78,8 +81,14 @@ Now create an ExternalSecret object pointing to our above secret:
 kubectl apply -f secrets/redis-creds.yaml
 kubectl get externalsecrets
 ```
+We should see our externalsecrets resource `redis-creds` in `SecretSynced` 
+state and ready to be true.
 
 ## Setup test pod
+
+Now setup a test pod that references our redis secret, and then inspect its
+environment to validate if the credentials match with what we stored in AWS
+SecretsManager.
 
 ```
 kubectl apply -f apps/test-eso.yaml
